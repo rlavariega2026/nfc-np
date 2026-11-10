@@ -1,0 +1,62 @@
+name: Deploy NFC NP landing page to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nfc-np-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Prepare assets and publish only to nfc-np
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout destination repository
+        uses: actions/checkout@v4
+
+      - name: Retrieve original landing assets without changing its repository
+        uses: actions/checkout@v4
+        with:
+          repository: rlavariega2026/NFC-Landingpage
+          ref: main
+          path: _source
+
+      - name: Copy original images and visual resources
+        run: |
+          cp -a _source/assets ./assets
+          rm -rf _source
+
+      - name: Save the complete image collection in this independent repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          if ! git diff --cached --quiet; then
+            git commit -m "Add original NFC landing image assets"
+            git push
+          fi
+
+      - name: Deploy only to public_html/nfc-np
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftps
+          local-dir: ./
+          server-dir: /public_html/nfc-np/
+          exclude: |
+            **/.git*/**
+            .git/**
+            **/.github/**
+            .github/**
+            **/README.md
+            **/.DS_Store
