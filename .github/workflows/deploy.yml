@@ -30,6 +30,7 @@ jobs:
 
       - name: Copy original images and visual resources
         run: |
+          rm -rf assets/assets
           mkdir -p assets
           cp -a _source/assets/. ./assets/
           rm -rf _source
