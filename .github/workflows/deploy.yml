@@ -30,14 +30,15 @@ jobs:
 
       - name: Copy original images and visual resources
         run: |
-          cp -a _source/assets ./assets
+          mkdir -p assets
+          cp -a _source/assets/. ./assets/
           rm -rf _source
 
       - name: Save the complete image collection in this independent repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets
+          git add -A assets
           if ! git diff --cached --quiet; then
             git commit -m "Add original NFC landing image assets"
             git push
